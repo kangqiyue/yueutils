@@ -2,8 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
   name='yueutils',        # How you named your package folder (foo)
-  packages=find_packages(),   # Chose the same as "name"
-  # package_dir={'yueutils': 'src/yueutils'},
+  # packages=find_packages(),   # Chose the same as "name"
+  package = "yueutils",
+  package_dir={'yueutils': 'src/yueutils'},
   version = '0.1',      # Start with a small number and increase it with every change you make
   license='afl-3.0',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'common utils function',   # Give a short description about your library
