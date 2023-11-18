@@ -109,14 +109,16 @@ def read_txt_data(path_and_name):
         lines = f.readlines()
     return lines
 
-def load_json(f):
-    f = open(f, encoding="utf-8")
-    data = json.load(f)
+def read_json(file):
+    with open(file, "r") as f:
+        data = json.load(f)
+    print(f"len of {file}:\n {len(data)}")
     return data
 
-def write_json(data,f_name):
-    with open(f_name, 'w', encoding="utf-8") as f:
-        json.dump(data, f,indent=2)
+def write_json(result, f_output):
+    with open(f_output, "w") as f:
+        print(f_output)
+        json.dump(result, f, ensure_ascii=False, indent=2)
 
 
 
