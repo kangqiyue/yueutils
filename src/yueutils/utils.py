@@ -3,6 +3,7 @@ import jsonlines
 import os
 import time
 import json
+import pandas as pd
 
 
 '''calculate time'''
@@ -79,7 +80,6 @@ def list_files_all(input_path):
     return lst
 
 
-
 '''jsonlines utils'''
 def read_jsonl_data(path_and_name):
     data = []
@@ -121,6 +121,21 @@ def write_json(result, f_output):
         json.dump(result, f, ensure_ascii=False, indent=2)
 
 
+"""convert josn to csv or excel"""
+def convert_json_to_excel(file_name):
+    data = read_json(file_name)
+    df = pd.DataFrame(data)
+    f_outupt = file_name.replace(".json", ".xlsx")
+    df.to_excel(f_outupt)
+    print(f"save file as: {f_outupt}")
+
+def convert_json_to_csv(file_name):
+    data = read_json(file_name)
+    df = pd.DataFrame(data)
+    f_outupt = file_name.replace(".json", ".csv")
+    df.to_csv(f_outupt)
+    print(f"save file as: {f_outupt}")
+
 
 '''count model parameters'''
 def count_trainable_parameters(model):
@@ -131,6 +146,7 @@ def count_no_trainable_parameters(model):
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters())
+
 
 '''get n frame from a video'''
 def get_n_frames(start, end, n):
