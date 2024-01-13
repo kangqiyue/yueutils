@@ -130,11 +130,34 @@ def convert_json_to_excel(file_name):
     print(f"save file as: {f_outupt}")
 
 def convert_json_to_csv(file_name):
+    """
+    convert json to csv
+    Args:
+        file_name:
+
+    Returns:
+        None
+    """
     data = read_json(file_name)
     df = pd.DataFrame(data)
     f_outupt = file_name.replace(".json", ".csv")
     df.to_csv(f_outupt)
     print(f"save file as: {f_outupt}")
+
+
+def hg_dataset_to_json(dataset):
+    """
+    convert huggingface dataset to json
+    Args:
+        dataset: Huggingface dataset
+
+    Returns:
+        data: list of dict
+    """
+    import pandas as pd
+    df = pd.DataFrame(dataset)
+    return df.to_dict(orient="records")
+
 
 
 '''count model parameters'''
