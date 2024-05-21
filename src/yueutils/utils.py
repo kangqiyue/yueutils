@@ -4,6 +4,8 @@ import os
 import time
 import json
 import pandas as pd
+from datetime import datetime
+
 
 
 '''calculate time'''
@@ -180,6 +182,58 @@ def get_n_frames(start, end, n):
     """
     step = int((end - start) / (n - 1)) # 计算步长
     return [start + step * i for i in range(n)] # 返回等间隔的n个整数
+
+
+
+"""generate file name"""
+def generate_filename(data_source, from_model, date=None, data=None, comment=None, is_raw=False, additional_info=None, extension="json"):
+    """
+    生成遵循规定命名规则的文件名。
+
+    :param date: 文件的日期，格式为 'YYYYMMDD' 或 datetime 对象。
+    :param data_source: data prompt来源
+    :param model: 生成数据的模型
+    :param additional_info: （可选）文件的附加信息。
+    :param extension: （默认为 'json'）文件扩展名。
+    :param comment: （可选）关于文件的注释。
+    :return: 根据参数构造的文件名字符串。
+    """
+    if date is None:
+        date = datetime.now()
+
+    # 如果日期是 datetime 对象，则转换为字符串
+    if isinstance(date, datetime):
+        date_str = date.strftime("%Y%m%d")
+    else:
+        date_str = date
+
+    # 构建基本的文件名
+    from_model = f"from-{from_model}"
+    filename_elements = [date_str, data_source, from_model]
+    if additional_info:
+        filename_elements.append(additional_info)
+    if is_raw:
+        filename_elements.append("raw")
+
+    # 添加注释到文件名（如果有）
+    if comment:
+        # 确保注释中不包含非法文件名字符
+        safe_comment = "".join([c for c in comment if c.isalnum() or c in ("_", "-")])
+        # safe_comment = safe_comment.replace("_", "-")
+        filename_elements.append(f"comment-{safe_comment}")
+
+    filename_elements = [i.replace("_", "-") for i in filename_elements]
+    if data:
+        filename = "_".join(filename_elements) + f"_{str(len(data))}.{extension}"
+    else:
+        filename = "_".join(filename_elements) + f".{extension}"
+
+    return filename
+
+
+def write_json_clean(data, f_save_path, f_save_name):
+    f_output = os.path.join(f_save_path, f_save_name)
+    write_json(data, f_output=f_output)
 
 
 if __name__ == "__mian__":

@@ -63,7 +63,7 @@ class DataReader:
 
     @staticmethod
     def read_json(data_file):
-        with open(data_file, "r") as f:
+        with open(data_file, "r", encoding="utf-8") as f:
             data = json.load(f)
         print(f"Load:{data_file}\nLen: {len(data)}")
         return data
