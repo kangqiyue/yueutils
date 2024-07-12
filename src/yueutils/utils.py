@@ -52,75 +52,42 @@ def init_env_hf_wandb(config_file=None):
     return
 
 
-'''path utils'''
-def mkdir(input_path):
-    if not os.path.exists(input_path):
-        os.makedirs(input_path)
-    else:
-        print(f"the path esxits: {input_path}")
-
-
-def list_files(endwith=None):
-    if endwith is not None:
-        files = []
-        for file in os.listdir('..'):
-            if file.endswith('.png'):
-                files.append(file)
-        return files
-    else:
-        files = []
-        for file in os.listdir('..'):
-            files.append(file)
-        return files
-
-def list_files_all(input_path):
-    lst = []
-    for path, subdirs, files in os.walk(input_path):
-        for name in files:
-            # print(os.path.join(path, name))
-            lst.append(os.path.join(path, name))
-    return lst
-
-
 '''jsonlines utils'''
-def read_jsonl_data(path_and_name):
+def read_jsonl_data(data_file):
     data = []
-    with open(path_and_name, 'r', encoding="utf-8") as fd:
+    with open(data_file, 'r', encoding="utf-8") as fd:
         for l in jsonlines.Reader(fd):
             data.append(l)
     return data
 
-def write_jsonl_data(items, path_and_name):
-    with jsonlines.open(path_and_name, 'w') as writer:
+def write_jsonl_data(items, data_file):
+    with jsonlines.open(data_file, 'w') as writer:
         writer.write_all(items)
-
-def read_jsonl_lst(lst_file):
-    '''
-    :param lst_file: list of jsonl file
-    :return: merged jsonl list data
-    '''
-    datas = []
-    for i in lst_file:
-        with open(i ,'r',encoding="utf-8") as fd:
-            for l in jsonlines.Reader(fd):
-                datas.append(l)
-    return datas
 
 def read_txt_data(path_and_name):
     with open(path_and_name) as f:
         lines = f.readlines()
     return lines
 
-def read_json(file):
-    with open(file, "r") as f:
+def read_json(data_file):
+    with open(data_file, "r") as f:
         data = json.load(f)
-    print(f"len of {file}:\n {len(data)}")
+    print(f"len of {data_file}:\n {len(data)}")
     return data
 
 def write_json(result, f_output):
     with open(f_output, "w") as f:
         print(f_output)
         json.dump(result, f, ensure_ascii=False, indent=2)
+
+
+def load_json_or_jsonl(data_file):
+    if data_file.endswith("json"):
+        return read_jsonl_data(data_file)
+    elif data_file.endswith("jsonl"):
+        return read_json(data_file)
+    else:
+        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {data_file}")
 
 
 """convert josn to csv or excel"""
@@ -182,7 +149,6 @@ def get_n_frames(start, end, n):
     """
     step = int((end - start) / (n - 1)) # 计算步长
     return [start + step * i for i in range(n)] # 返回等间隔的n个整数
-
 
 
 """generate file name"""
