@@ -82,9 +82,9 @@ def write_json(result, f_output):
 
 
 def load_json_or_jsonl(data_file):
-    if data_file.endswith("json"):
+    if data_file.endswith("jsonl"):
         return read_jsonl_data(data_file)
-    elif data_file.endswith("jsonl"):
+    elif data_file.endswith("json"):
         return read_json(data_file)
     else:
         raise NotImplementedError(f"ERROR, must be json or jsonl, but got {data_file}")
