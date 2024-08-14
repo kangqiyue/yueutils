@@ -19,75 +19,38 @@ def time_counter(func):
     return wrapper
 
 
-'''print utils'''
-def print_args(*args, **kwargs): #print args
-    for arg in args:
-        print(f"{arg}")
-    for key, value in kwargs.items():
-        print("%s == %s" % (key, value))
-
-def print_space(strings): #print with space
-    print()
-    print(strings)
-    print()
-
-
-'''init config utils'''
-def init_config(config_file):
-    config_dict=toml.load(config_file, _dict=dict)
-    hf_config = config_dict["HFToken"]
-    wandb_config = config_dict["WandbToken"]
-    return config_dict,hf_config,wandb_config
-
-def init_env_hf_wandb(config_file=None):
-    if config_file is not None:
-        config_file = config_file
-    else:
-        config_file = "./configs/configs.toml"
-    config_dict, hf_config, wandb_config = init_config(config_file)
-    YOUR_TOKEN = hf_config["Val"]
-    os.environ["WANDB_API_KEY"] = wandb_config["Val"]
-    os.environ["YOUR_TOKEN"] = YOUR_TOKEN
-    print(f"init WandbToken and HFToken finished!")
-    return
-
 
 '''jsonlines utils'''
-def read_jsonl_data(data_file):
+def read_jsonl_data(f_input):
     data = []
-    with open(data_file, 'r', encoding="utf-8") as fd:
+    with open(f_input, 'r', encoding="utf-8") as fd:
         for l in jsonlines.Reader(fd):
             data.append(l)
     return data
 
-def write_jsonl_data(items, data_file):
-    with jsonlines.open(data_file, 'w') as writer:
-        writer.write_all(items)
+def write_jsonl_data(res, f_output):
+    with jsonlines.open(f_output, 'w') as writer:
+        writer.write_all(res)
 
-def read_txt_data(path_and_name):
-    with open(path_and_name) as f:
-        lines = f.readlines()
-    return lines
-
-def read_json(data_file):
-    with open(data_file, "r") as f:
+def read_json(f_input):
+    with open(f_input, "r") as f:
         data = json.load(f)
-    print(f"len of {data_file}:\n {len(data)}")
+    print(f"len of {f_input}:\n {len(data)}")
     return data
 
-def write_json(result, f_output):
+def write_json(res, f_output):
     with open(f_output, "w") as f:
         print(f_output)
-        json.dump(result, f, ensure_ascii=False, indent=2)
+        json.dump(res, f, ensure_ascii=False, indent=2)
 
 
-def load_json_or_jsonl(data_file):
-    if data_file.endswith("jsonl"):
-        return read_jsonl_data(data_file)
-    elif data_file.endswith("json"):
-        return read_json(data_file)
+def load_json_or_jsonl(f_input):
+    if f_input.endswith("jsonl"):
+        return read_jsonl_data(f_input)
+    elif f_input.endswith("json"):
+        return read_json(f_input)
     else:
-        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {data_file}")
+        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {f_input}")
 
 
 """convert josn to csv or excel"""

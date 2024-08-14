@@ -9,7 +9,7 @@ setup(
   license='afl-3.0',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'common utils function',   # Give a short description about your library
   author = 'Alex',                   # Type in your name
-  install_requires=["toml", "jsonlines"],
+  install_requires=["toml", "jsonlines", "polars>=1.4.1", "datasets>=2.21.0"],
   # classifiers=[
   #   'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
   #   'Intended Audience :: Developers',      # Define that your audience are developers
