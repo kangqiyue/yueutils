@@ -8,18 +8,6 @@ from datetime import datetime
 
 
 
-'''calculate time'''
-def time_counter(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print(f"Function '{func.__name__}' took {end_time - start_time:.6f} seconds to run.")
-        return result
-    return wrapper
-
-
-
 '''jsonlines utils'''
 def read_jsonl_data(f_input):
     data = []
@@ -30,19 +18,25 @@ def read_jsonl_data(f_input):
 
 def write_jsonl_data(res, f_output):
     with jsonlines.open(f_output, 'w') as writer:
+        print(f"Write {len(res)} samples to {f_output}")
         writer.write_all(res)
 
 def read_json(f_input):
     with open(f_input, "r") as f:
         data = json.load(f)
-    print(f"len of {f_input}:\n {len(data)}")
+    print(f"Length of {f_input}:\n {len(data)}")
     return data
 
 def write_json(res, f_output):
     with open(f_output, "w") as f:
-        print(f_output)
+        print(f"Write {len(res)} samples to {f_output}")
         json.dump(res, f, ensure_ascii=False, indent=2)
 
+# some alias
+load_jsonl = read_jsonl_data
+read_jsonl = read_jsonl_data
+write_jsonl = write_jsonl_data
+load_json = read_json
 
 def load_json_or_jsonl(f_input):
     if f_input.endswith("jsonl"):
@@ -51,6 +45,14 @@ def load_json_or_jsonl(f_input):
         return read_json(f_input)
     else:
         raise NotImplementedError(f"ERROR, must be json or jsonl, but got {f_input}")
+
+def write_json_or_jsonl(res, f_output):
+    if f_output.endswith("jsonl"):
+        write_jsonl(res, f_output)
+    elif f_output.endwith("json"):
+        write_json(res, f_output)
+    else:
+        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {f_output}")
 
 
 """convert josn to csv or excel"""
@@ -77,7 +79,7 @@ def convert_json_to_csv(file_name):
     print(f"save file as: {f_outupt}")
 
 
-def hg_dataset_to_json(dataset):
+def hf_dataset_to_json(dataset):
     """
     convert huggingface dataset to json
     Args:
@@ -89,7 +91,8 @@ def hg_dataset_to_json(dataset):
     import pandas as pd
     df = pd.DataFrame(dataset)
     return df.to_dict(orient="records")
-
+    
+hg_dataset_to_json = hf_dataset_to_json
 
 
 '''count model parameters'''
