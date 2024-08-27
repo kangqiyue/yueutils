@@ -5,25 +5,6 @@ from typing import Callable, List
 import jsonlines
 
 
-def print_len_before_and_after(func: Callable) -> Callable:
-    """装饰器函数, 打印输入的数据和输出的数据的length"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # 对于类方法，数据可能是第二个参数（在`self`之后）
-        # 这里简单地假设数据是第二个参数
-        if len(args) > 1:
-            data = args[1]
-            print(f"Before '{func.__name__}': {len(data)}")
-            result = func(*args, **kwargs)  # 调用原始函数
-            # 注意处理结果也需要是可测量长度的
-            print(f"After '{func.__name__}': {len(result)}")
-        else:
-            # 如果不是期望的情况（例如没有足够的参数），简单地直接调用函数
-            result = func(*args, **kwargs)
-        return result
-    return wrapper
-
-
 class DataReader:
     """Read data and write data. support: json, jsonl
     """
