@@ -1,6 +1,7 @@
 import polars as pl
 from datasets import Dataset
-from ..utils import load_json_or_jsonl, time_counter, write_json
+from ..utils import load_json_or_jsonl, write_json
+from ..wrapper import time_counter
 
 
 @time_counter
