@@ -1,7 +1,9 @@
 import polars as pl
 from datasets import Dataset
-from ..utils import load_json_or_jsonl, write_json
+from ..utils import load_json_or_jsonl, write_json, read_json
 from ..wrapper import time_counter
+from loguru import logger
+
 
 
 @time_counter
@@ -35,18 +37,38 @@ def save_data_to_pl_parquet(data: list, f_output: str, demo_num: int = 20):
     df.write_parquet(f_output)
     print(f"save {len(df)} samples in: {f_output}")
 
+# alias function 
+# load -- save
+read_parquet = load_data_from_pl_parquet
+write_parquet = save_data_to_pl_parquet
+# read -- write
+load_parquet = load_data_from_pl_parquet
+save_parquet = save_data_to_pl_parquet
+
+
+def load_json_or_parquet(f_input):
+    if f_input.endswith("parquet"):
+        return read_parquet(f_input)
+    elif f_input.endswith("json"):
+        return read_json(f_input)
+    else:
+        raise NotImplementedError(f"ERROR, must be json or parquet, but got {f_input}")
+
+
+def write_json_or_parquet(data: list, f_output: str):
+    if len(data) >= 20000 and ".json" in f_output:
+        f_output = f_output.replace(".json", ".parquet")
+        logger.warning(f"change json to parquet for {len(data)} samples | f_output set to: {f_output}")
+    elif len(data) < 20000 and ".parquet" in f_output:
+        f_output = f_output.replace(".parquet", ".json")
+        logger.warning(f"change parquet to json for {len(data)} samples | f_output set to: {f_output}")
+    if f_output.endswith(".json"):
+        write_json(data, f_output)
+    elif f_output.endswith(".parquet"):
+        save_data_to_pl_parquet(data, f_output)
+    else:
+        raise NotImplementedError(f"only support json or parquet, but got: {f_output}")
+   
 
 if __name__ == "__main__":
-    flst = [
-        "demo.json"
-    ]
-    data_all = []
-    for file in flst:
-        data = load_json_or_jsonl(file)
-        data_all.extend(data)
-    print(len(data_all))
-
-    f_test = f"test_{len(data_all)}.parquet"
-    print(f_test)
-    save_data_to_pl_parquet(data_all, f_test)
-    data = load_data_from_pl_parquet(f_test, return_hf_dataset=False)
+    pass
