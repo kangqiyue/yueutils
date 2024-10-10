@@ -5,6 +5,7 @@ from ..wrapper import time_counter
 from loguru import logger
 
 
+
 @time_counter
 def load_data_from_pl_parquet(f_input, return_hf_dataset=False):
     assert f_input.endswith("parquet")
