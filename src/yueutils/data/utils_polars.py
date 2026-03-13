@@ -1,52 +1,82 @@
 import polars as pl
+from typing import List, Dict, Any, Union, Optional
 from datasets import Dataset
-from ..utils import load_json_or_jsonl, write_json, read_json
-from ..wrapper import time_counter
 from loguru import logger
 
+from ..wrapper import time_counter
 
 
 @time_counter
-def load_data_from_pl_parquet(f_input, return_hf_dataset=False):
-    assert f_input.endswith("parquet")
-    # # slow 
-    # data = pl.read_parquet(f_input)
-    # data = data.to_pandas()
-    # data = Dataset.from_pandas(data)
-    # fast
+def load_data_from_pl_parquet(
+    f_input: str,
+    return_hf_dataset: bool = False
+) -> Union[pl.DataFrame, Dataset]:
+    """Load data from Parquet file using Polars.
+
+    Args:
+        f_input: Input Parquet file path
+        return_hf_dataset: If True, return HuggingFace Dataset instead of DataFrame
+
+    Returns:
+        Polars DataFrame or HuggingFace Dataset
+    """
+    assert f_input.endswith("parquet"), f"Expected .parquet file, got {f_input}"
+
     data = pl.read_parquet(f_input)
+    logger.info(f"Loaded {len(data)} records from {f_input}")
+
     if return_hf_dataset:
         data = Dataset.from_polars(data)
+
     return data
 
 
 @time_counter
-def save_data_to_pl_parquet(data: list, f_output: str, demo_num: int = 20):
+def save_data_to_pl_parquet(
+    data: List[Dict[str, Any]],
+    f_output: str,
+    demo_num: Optional[int] = 20
+) -> None:
+    """Save data to Parquet file using Polars.
+
+    Args:
+        data: List of dictionaries to save
+        f_output: Output Parquet file path
+        demo_num: Number of samples to save as demo JSON file. None to skip demo.
     """
-    data: list of dict
-    f_output: output name
-    """
-    # save demo
-    if demo_num is not None:
-        demo_data = data[0:demo_num]
+    # Save demo file for quick inspection
+    if demo_num is not None and demo_num > 0:
+        from .utils_json import write_json
+        demo_data = data[:demo_num]
         f_demo_output = f_output.replace(".parquet", "_demo.json")
         write_json(demo_data, f_demo_output)
-    
-    # save data
-    df =  pl.DataFrame(data)
-    df.write_parquet(f_output)
-    print(f"save {len(df)} samples in: {f_output}")
 
-# alias function 
-# load -- save
+    # Save full data as Parquet
+    df = pl.DataFrame(data)
+    df.write_parquet(f_output)
+    logger.info(f"Saved {len(df)} records to {f_output}")
+
+# Aliases for backward compatibility
 read_parquet = load_data_from_pl_parquet
 write_parquet = save_data_to_pl_parquet
-# read -- write
 load_parquet = load_data_from_pl_parquet
 save_parquet = save_data_to_pl_parquet
 
 
-def load_json_or_parquet(f_input):
+def load_json_or_parquet(f_input: str) -> Union[List[Dict[str, Any]], pl.DataFrame]:
+    """Load data from JSON or Parquet file.
+
+    Args:
+        f_input: Input file path (.json or .parquet)
+
+    Returns:
+        List of dicts (for JSON) or Polars DataFrame (for Parquet)
+
+    Raises:
+        NotImplementedError: If file extension is not .json or .parquet
+    """
+    from .utils_json import read_json
+
     if f_input.endswith("parquet"):
         return read_parquet(f_input)
     elif f_input.endswith("json"):
@@ -55,19 +85,45 @@ def load_json_or_parquet(f_input):
         raise NotImplementedError(f"ERROR, must be json or parquet, but got {f_input}")
 
 
-def write_json_or_parquet(data: list, f_output: str):
+def write_json_or_parquet(data: List[Dict[str, Any]], f_output: str) -> str:
+    """Write data to JSON or Parquet file with automatic format optimization.
+
+    Automatically converts to Parquet for large datasets (>=20k records).
+
+    Args:
+        data: List of dictionaries to write
+        f_output: Output file path (.json or .parquet)
+
+    Returns:
+        Final output file path (may differ if auto-converted)
+
+    Raises:
+        NotImplementedError: If file extension is not .json or .parquet
+    """
+    from .utils_json import write_json
+
+    # Auto-optimize format based on data size
     if len(data) >= 20000 and ".json" in f_output:
         f_output = f_output.replace(".json", ".parquet")
-        logger.warning(f"change json to parquet for {len(data)} samples | f_output set to: {f_output}")
+        logger.warning(
+            f"Auto-converting to Parquet for {len(data)} records | "
+            f"Output: {f_output}"
+        )
     elif len(data) < 20000 and ".parquet" in f_output:
         f_output = f_output.replace(".parquet", ".json")
-        logger.warning(f"change parquet to json for {len(data)} samples | f_output set to: {f_output}")
+        logger.warning(
+            f"Auto-converting to JSON for {len(data)} records | "
+            f"Output: {f_output}"
+        )
+
     if f_output.endswith(".json"):
         write_json(data, f_output)
     elif f_output.endswith(".parquet"):
         save_data_to_pl_parquet(data, f_output)
     else:
-        raise NotImplementedError(f"only support json or parquet, but got: {f_output}")
+        raise NotImplementedError(f"Only support json or parquet, but got: {f_output}")
+
+    return f_output
    
 
 if __name__ == "__main__":

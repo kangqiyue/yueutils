@@ -1,0 +1,13 @@
+-r requirements.txt
+
+# Development tools
+pytest>=7.0.0
+pytest-cov>=3.0.0
+black>=22.0.0
+flake8>=4.0.0
+mypy>=0.950
+
+# Optional dependencies for deep learning
+# Uncomment if needed:
+# torch>=2.0.0
+# deepspeed>=0.10.0
