@@ -2,8 +2,9 @@
 yueutils - Common utility functions for Python projects
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
+from pathlib import Path
 from loguru import logger
 
 # Import from data submodules
@@ -53,14 +54,16 @@ def load_data(f_input: str):
     Raises:
         NotImplementedError: If file extension is not supported
     """
-    if f_input.endswith("parquet"):
+    suffix = Path(f_input).suffix.lower()
+
+    if suffix == ".parquet":
         return read_parquet(f_input)
-    elif f_input.endswith("json"):
+    elif suffix == ".json":
         return read_json(f_input)
-    elif f_input.endswith("jsonl"):
+    elif suffix == ".jsonl":
         return read_jsonl(f_input)
     else:
-        raise NotImplementedError(f"ERROR, must be json, jsonl or parquet, but got {f_input}")
+        raise NotImplementedError(f"ERROR, must be .json, .jsonl or .parquet, but got {f_input}")
 
 
 def write_data(data: list, f_output: str) -> str:
@@ -75,24 +78,29 @@ def write_data(data: list, f_output: str) -> str:
     Returns:
         Final output file path (may differ if auto-converted)
     """
-    if len(data) >= 20000 and ".json" in f_output:
-        f_output = f_output.replace(".json", ".parquet")
-        logger.warning(f"change json to parquet for {len(data)} samples | f_output set to: {f_output}")
-    elif len(data) >= 20000 and ".jsonl" in f_output:
-        f_output = f_output.replace(".jsonl", ".parquet")
-        logger.warning(f"change jsonl to parquet for {len(data)} samples | f_output set to: {f_output}")
-    elif len(data) < 20000 and ".parquet" in f_output:
-        f_output = f_output.replace(".parquet", ".json")
-        logger.warning(f"change parquet to json for {len(data)} samples | f_output set to: {f_output}")
+    output_path = Path(f_output)
+    suffix = output_path.suffix.lower()
 
-    if f_output.endswith(".json"):
+    # Auto-optimize format based on data size
+    if len(data) >= 20000 and suffix in (".json", ".jsonl"):
+        output_path = output_path.with_suffix(".parquet")
+        f_output = str(output_path)
+        logger.warning(f"Auto-converting to parquet for {len(data)} samples | f_output: {f_output}")
+    elif len(data) < 20000 and suffix == ".parquet":
+        output_path = output_path.with_suffix(".json")
+        f_output = str(output_path)
+        logger.warning(f"Auto-converting to json for {len(data)} samples | f_output: {f_output}")
+
+    # Write based on final suffix
+    suffix = output_path.suffix.lower()
+    if suffix == ".json":
         write_json(data, f_output)
-    elif f_output.endswith(".jsonl"):
+    elif suffix == ".jsonl":
         write_jsonl(data, f_output)
-    elif f_output.endswith(".parquet"):
+    elif suffix == ".parquet":
         write_parquet(data, f_output)
     else:
-        raise NotImplementedError(f"only support json, jsonl or parquet, but got: {f_output}")
+        raise NotImplementedError(f"Only support .json, .jsonl or .parquet, but got: {f_output}")
 
     return f_output
 

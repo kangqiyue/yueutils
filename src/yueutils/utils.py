@@ -1,7 +1,6 @@
-import toml
 import os
-import time
-import pandas as pd
+import csv
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from loguru import logger
@@ -20,33 +19,93 @@ load_json = read_json
 def convert_json_to_excel(file_name: str) -> str:
     """Convert JSON file to Excel format.
 
+    Note: Requires pandas and openpyxl to be installed.
+    Install with: pip install yueutils[excel]
+
     Args:
         file_name: Input JSON file path
 
     Returns:
         Output Excel file path
+
+    Raises:
+        ImportError: If pandas or openpyxl is not installed
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError(
+            "pandas is required for Excel conversion. "
+            "Install it with: pip install yueutils[excel]"
+        )
+
     data = read_json(file_name)
     df = pd.DataFrame(data)
-    f_output = file_name.replace(".json", ".xlsx")
-    df.to_excel(f_output, index=False)
+    f_output = str(Path(file_name).with_suffix(".xlsx"))
+
+    try:
+        df.to_excel(f_output, index=False)
+    except ImportError:
+        raise ImportError(
+            "openpyxl is required for Excel export. "
+            "Install it with: pip install yueutils[excel]"
+        )
+
     logger.info(f"Saved file as: {f_output}")
     return f_output
 
 
-def convert_json_to_csv(file_name: str) -> str:
+def convert_json_to_csv(file_name: str, use_pandas: bool = False) -> str:
     """Convert JSON file to CSV format.
+
+    By default, uses built-in csv module (lightweight).
+    Set use_pandas=True to use pandas (requires pandas installation).
 
     Args:
         file_name: Input JSON file path
+        use_pandas: Whether to use pandas (default: False)
 
     Returns:
         Output CSV file path
+
+    Raises:
+        ImportError: If use_pandas=True but pandas is not installed
     """
     data = read_json(file_name)
-    df = pd.DataFrame(data)
-    f_output = file_name.replace(".json", ".csv")
-    df.to_csv(f_output, index=False)
+    f_output = str(Path(file_name).with_suffix(".csv"))
+
+    if use_pandas:
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "pandas is required when use_pandas=True. "
+                "Install it with: pip install yueutils[excel] "
+                "or set use_pandas=False to use built-in csv module"
+            )
+        df = pd.DataFrame(data)
+        df.to_csv(f_output, index=False)
+    else:
+        # Use built-in csv module (lightweight)
+        if not data:
+            logger.warning(f"No data to write to {f_output}")
+            with open(f_output, 'w', encoding='utf-8', newline='') as f:
+                pass
+            return f_output
+
+        # Get all unique keys from all records
+        fieldnames = []
+        for record in data:
+            if isinstance(record, dict):
+                for key in record.keys():
+                    if key not in fieldnames:
+                        fieldnames.append(key)
+
+        with open(f_output, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(data)
+
     logger.info(f"Saved file as: {f_output}")
     return f_output
 
@@ -54,12 +113,26 @@ def convert_json_to_csv(file_name: str) -> str:
 def hf_dataset_to_json(dataset) -> List[Dict[str, Any]]:
     """Convert HuggingFace dataset to list of dictionaries.
 
+    Note: This function requires pandas for conversion.
+    Install with: pip install yueutils[excel]
+
     Args:
         dataset: HuggingFace dataset object
 
     Returns:
         List of dictionaries
+
+    Raises:
+        ImportError: If pandas is not installed
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError(
+            "pandas is required for HuggingFace dataset conversion. "
+            "Install it with: pip install yueutils[excel]"
+        )
+
     df = pd.DataFrame(dataset)
     return df.to_dict(orient="records")
 

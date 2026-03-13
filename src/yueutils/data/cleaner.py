@@ -1,6 +1,6 @@
 
 import json
-from functools import wraps
+from pathlib import Path
 from typing import Callable, List
 import jsonlines
 
@@ -12,20 +12,24 @@ class DataReader:
         pass
 
     def load_data(self, data_file: str) -> list:
-        if data_file.endswith(".json"):
+        suffix = Path(data_file).suffix.lower()
+
+        if suffix == ".json":
             return self.read_json(data_file)
-        elif data_file.endswith(".jsonl"):
+        elif suffix == ".jsonl":
             return self.read_jsonl_data(data_file)
         else:
-            raise NotImplementedError(f"Only support 'json' or 'jsonl', but got {data_file}!")
+            raise NotImplementedError(f"Only support '.json' or '.jsonl', but got {data_file}!")
 
     def write_data(self, data: list, f_output: str) -> None:
-        if f_output.endswith(".json"):
+        suffix = Path(f_output).suffix.lower()
+
+        if suffix == ".json":
             self.write_json(data=data, f_output=f_output)
-        elif f_output.endswith(".jsonl"):
+        elif suffix == ".jsonl":
             self.write_jsonl_data(data=data, f_output=f_output)
         else:
-            raise NotImplementedError(f"Only support 'json' or 'jsonl', but got {f_output}!")
+            raise NotImplementedError(f"Only support '.json' or '.jsonl', but got {f_output}!")
 
     @staticmethod
     def read_jsonl_data(data_file):

@@ -29,6 +29,12 @@ pip install -e ".[dev]"
 
 ### Optional Dependencies
 
+For Excel conversion and pandas integration:
+
+```bash
+pip install yueutils[excel]
+```
+
 For deep learning features (distributed training, model utilities):
 
 ```bash
@@ -76,10 +82,13 @@ write_parquet(data, "output.parquet")
 ```python
 from yueutils import convert_json_to_csv, convert_json_to_excel
 
-# Convert JSON to CSV
+# Convert JSON to CSV (lightweight, no extra dependencies)
 convert_json_to_csv("data.json")  # Creates data.csv
 
-# Convert JSON to Excel
+# Convert JSON to CSV using pandas (requires yueutils[excel])
+convert_json_to_csv("data.json", use_pandas=True)
+
+# Convert JSON to Excel (requires yueutils[excel])
 convert_json_to_excel("data.json")  # Creates data.xlsx
 ```
 
@@ -199,13 +208,18 @@ write_data(large_data, "output.json")  # Actually saves as output.parquet
 
 ## Requirements
 
+### Core Dependencies
+
 - Python >= 3.8
-- toml >= 0.10.0
 - jsonlines >= 3.0.0
 - polars >= 1.4.1
 - datasets >= 2.21.0
 - loguru >= 0.6.0
-- pandas >= 1.3.0
+
+### Optional Dependencies
+
+- **excel**: pandas >= 1.3.0, openpyxl >= 3.0.0 (for Excel and advanced CSV conversion)
+- **deeplearning**: torch >= 2.0.0, deepspeed >= 0.10.0 (for distributed training utilities)
 
 ## Contributing
 
@@ -215,7 +229,36 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the Academic Free License v3.0 (AFL-3.0).
 
+## Running Tests
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/ -v
+
+# Run tests with coverage
+pytest tests/ --cov=yueutils --cov-report=html
+```
+
 ## Changelog
+
+### v0.3.0 (2026-03-13) - Latest
+
+**Major improvements:**
+- 🚀 **Lightweight Core**: Removed unused dependencies (toml), made pandas optional
+- 🔧 **Cross-platform Fix**: Using pathlib for robust file extension checking
+- ✅ **Test Coverage**: Added comprehensive unit tests
+- 📦 **Modular Install**: Optional dependencies for excel and deeplearning features
+
+**Breaking Changes:**
+- `pandas` is now optional - install with `pip install yueutils[excel]` if needed
+- `convert_json_to_csv()` now defaults to built-in csv module (set `use_pandas=True` for old behavior)
+
+**Bug Fixes:**
+- Fixed file extension checking to be case-insensitive and platform-independent
+- Removed unused imports (toml, time, functools.wraps)
 
 ### v0.2.0 (2026-03-13)
 

@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-13
+
+### Added
+- ✅ Comprehensive unit test suite with 40+ tests
+- 📦 Optional `[excel]` dependency group for pandas/openpyxl
+- 🔧 Built-in CSV conversion using Python's csv module (no pandas required)
+- 📝 Test fixtures and conftest.py for pytest
+
+### Changed
+- **BREAKING**: `pandas` is now an optional dependency
+  - Install with `pip install yueutils[excel]` for Excel features
+  - `convert_json_to_csv()` now defaults to built-in csv module
+  - Set `use_pandas=True` parameter to use pandas (if installed)
+- **BREAKING**: Better error messages when optional dependencies are missing
+- 🔧 File extension checking now uses `pathlib.Path` for cross-platform compatibility
+- 🔧 File path operations now use `Path.with_suffix()` instead of string replacement
+- 🎯 All file extension checks are now case-insensitive
+
+### Fixed
+- 🐛 File extension checking is now platform-independent (Windows/Linux/macOS)
+- 🐛 Demo file generation in Parquet writer now uses proper path manipulation
+- 🐛 Extension checking properly handles uppercase extensions (.JSON, .JSONL)
+
+### Removed
+- ❌ Removed unused `toml` dependency
+- ❌ Removed unused `import time` from utils.py
+- ❌ Removed unused `from functools import wraps` from cleaner.py
+- 📉 Reduced installation size by ~200MB (pandas now optional)
+
 ## [0.2.0] - 2026-03-13
 
 ### Added

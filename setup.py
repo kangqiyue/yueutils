@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='yueutils',
-    version='0.2.0',
+    version='0.3.0',
     author='Alex',
     description='Common utility functions for Python projects',
     long_description=long_description,
@@ -15,12 +15,10 @@ setup(
     package_dir={'': 'src'},
     python_requires='>=3.8',
     install_requires=[
-        "toml>=0.10.0",
         "jsonlines>=3.0.0",
         "polars>=1.4.1,<2.0.0",
         "datasets>=2.21.0,<3.0.0",
         "loguru>=0.6.0",
-        "pandas>=1.3.0",
     ],
     extras_require={
         'dev': [
@@ -29,6 +27,10 @@ setup(
             'black>=22.0.0',
             'flake8>=4.0.0',
             'mypy>=0.950',
+        ],
+        'excel': [
+            'pandas>=1.3.0',
+            'openpyxl>=3.0.0',
         ],
         'deeplearning': [
             'torch>=2.0.0',

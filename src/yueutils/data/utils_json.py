@@ -1,5 +1,6 @@
 import jsonlines
 import json
+from pathlib import Path
 from typing import List, Dict, Any
 from loguru import logger
 
@@ -85,12 +86,14 @@ def load_json_or_jsonl(f_input: str) -> List[Dict[str, Any]]:
     Raises:
         NotImplementedError: If file extension is not .json or .jsonl
     """
-    if f_input.endswith("jsonl"):
+    suffix = Path(f_input).suffix.lower()
+
+    if suffix == ".jsonl":
         return read_jsonl_data(f_input)
-    elif f_input.endswith("json"):
+    elif suffix == ".json":
         return read_json(f_input)
     else:
-        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {f_input}")
+        raise NotImplementedError(f"ERROR, must be .json or .jsonl, but got {f_input}")
 
 
 def write_json_or_jsonl(res: List[Dict[str, Any]], f_output: str) -> None:
@@ -103,11 +106,13 @@ def write_json_or_jsonl(res: List[Dict[str, Any]], f_output: str) -> None:
     Raises:
         NotImplementedError: If file extension is not .json or .jsonl
     """
-    if f_output.endswith("jsonl"):
+    suffix = Path(f_output).suffix.lower()
+
+    if suffix == ".jsonl":
         write_jsonl(res, f_output)
-    elif f_output.endswith("json"):
+    elif suffix == ".json":
         write_json(res, f_output)
     else:
-        raise NotImplementedError(f"ERROR, must be json or jsonl, but got {f_output}")
+        raise NotImplementedError(f"ERROR, must be .json or .jsonl, but got {f_output}")
 
 

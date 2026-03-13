@@ -1,4 +1,5 @@
 import polars as pl
+from pathlib import Path
 from typing import List, Dict, Any, Union, Optional
 from datasets import Dataset
 from loguru import logger
@@ -20,7 +21,8 @@ def load_data_from_pl_parquet(
     Returns:
         Polars DataFrame or HuggingFace Dataset
     """
-    assert f_input.endswith("parquet"), f"Expected .parquet file, got {f_input}"
+    suffix = Path(f_input).suffix.lower()
+    assert suffix == ".parquet", f"Expected .parquet file, got {f_input}"
 
     data = pl.read_parquet(f_input)
     logger.info(f"Loaded {len(data)} records from {f_input}")
@@ -48,7 +50,8 @@ def save_data_to_pl_parquet(
     if demo_num is not None and demo_num > 0:
         from .utils_json import write_json
         demo_data = data[:demo_num]
-        f_demo_output = f_output.replace(".parquet", "_demo.json")
+        output_path = Path(f_output)
+        f_demo_output = str(output_path.with_stem(f"{output_path.stem}_demo").with_suffix(".json"))
         write_json(demo_data, f_demo_output)
 
     # Save full data as Parquet
@@ -77,12 +80,14 @@ def load_json_or_parquet(f_input: str) -> Union[List[Dict[str, Any]], pl.DataFra
     """
     from .utils_json import read_json
 
-    if f_input.endswith("parquet"):
+    suffix = Path(f_input).suffix.lower()
+
+    if suffix == ".parquet":
         return read_parquet(f_input)
-    elif f_input.endswith("json"):
+    elif suffix == ".json":
         return read_json(f_input)
     else:
-        raise NotImplementedError(f"ERROR, must be json or parquet, but got {f_input}")
+        raise NotImplementedError(f"ERROR, must be .json or .parquet, but got {f_input}")
 
 
 def write_json_or_parquet(data: List[Dict[str, Any]], f_output: str) -> str:
@@ -102,26 +107,33 @@ def write_json_or_parquet(data: List[Dict[str, Any]], f_output: str) -> str:
     """
     from .utils_json import write_json
 
+    output_path = Path(f_output)
+    suffix = output_path.suffix.lower()
+
     # Auto-optimize format based on data size
-    if len(data) >= 20000 and ".json" in f_output:
-        f_output = f_output.replace(".json", ".parquet")
+    if len(data) >= 20000 and suffix == ".json":
+        output_path = output_path.with_suffix(".parquet")
+        f_output = str(output_path)
         logger.warning(
             f"Auto-converting to Parquet for {len(data)} records | "
             f"Output: {f_output}"
         )
-    elif len(data) < 20000 and ".parquet" in f_output:
-        f_output = f_output.replace(".parquet", ".json")
+    elif len(data) < 20000 and suffix == ".parquet":
+        output_path = output_path.with_suffix(".json")
+        f_output = str(output_path)
         logger.warning(
             f"Auto-converting to JSON for {len(data)} records | "
             f"Output: {f_output}"
         )
 
-    if f_output.endswith(".json"):
+    # Write based on final suffix
+    suffix = output_path.suffix.lower()
+    if suffix == ".json":
         write_json(data, f_output)
-    elif f_output.endswith(".parquet"):
+    elif suffix == ".parquet":
         save_data_to_pl_parquet(data, f_output)
     else:
-        raise NotImplementedError(f"Only support json or parquet, but got: {f_output}")
+        raise NotImplementedError(f"Only support .json or .parquet, but got: {f_output}")
 
     return f_output
    
